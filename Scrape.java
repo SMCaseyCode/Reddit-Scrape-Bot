@@ -87,16 +87,21 @@ public class Scrape {
 
     public static void jsonParse(String rawData, int apiLimit, String[] redditData, String[] redditPosts, boolean hasStartupPosts, String[] alreadyPostedArray, String[] redirectLinks, String[] thumbnailUrls, String[] domainArray, String[] miniUrl, String[] authorArray) throws JsonProcessingException {
 
-        JsonNode node = parse(rawData); //parses rawData JSON
-        node = node.get("data").get("children"); //gets node to == .json/data/children
+        try {
+            JsonNode node = parse(rawData); //parses rawData JSON
+            node = node.get("data").get("children"); //gets node to == .json/data/children
 
-        String filteredNode = node.toString(); //Makes node into a string and places it into filteredNode
-        JsonArray endNode = JsonParser.parseString(filteredNode).getAsJsonArray(); //Places the parsed filteredNode String into endNode array to get each post and its data
+            String filteredNode = node.toString(); //Makes node into a string and places it into filteredNode
+            JsonArray endNode = JsonParser.parseString(filteredNode).getAsJsonArray(); //Places the parsed filteredNode String into endNode array to get each post and its data
 
 
-        setRedditPosts(apiLimit, redditData, redditPosts, endNode, redirectLinks, thumbnailUrls, domainArray, miniUrl, authorArray);
+            setRedditPosts(apiLimit, redditData, redditPosts, endNode, redirectLinks, thumbnailUrls, domainArray, miniUrl, authorArray);
 
-        hasStartupPosts(hasStartupPosts, alreadyPostedArray, redditPosts, apiLimit);
+            hasStartupPosts(hasStartupPosts, alreadyPostedArray, redditPosts, apiLimit);
+
+        }catch (Exception e){
+            System.out.println("Jackson Error");
+        }
 
     }
 
@@ -150,6 +155,7 @@ public class Scrape {
 
         for (int i = 0; i < apiLimit; i++) {
 
+
             if (!(Objects.equals(alreadyPostedArray[0], redditPosts[0]))) { //Checks for the amount of posts that have changed
 
                 if (alreadyPostedArray[0].equals(redditPosts[i])) {
@@ -170,24 +176,27 @@ public class Scrape {
         if(!(index == 100)){ //if a new post was found
 
             for(int j = 0; j < index; j++){
+                boolean alreadyPosted = false;
 
                 System.out.println("New Post: " + redditPosts[j]); //shows the new post in the console
                 System.out.println("------------------------------------------------------------------");
 
-                tempString = redditPosts[j].replaceAll("^\"|\"", "");
+                tempString = redditPosts[j].replaceAll("[^a-zA-Z ]", "");
                 String[] tempStringArray = tempString.split(" ");
 
                 for (int k = 0; k < tempStringArray.length; k++){
 
                     for (int l = 0; l < activeList.length; l++){
 
-                        if (tempStringArray[k].equalsIgnoreCase(activeList[l])){ //Checks for Keywords
+                        if (tempStringArray[k].equalsIgnoreCase(activeList[l]) && !alreadyPosted){ //Checks for Keywords
 
                             filteredPost = redditPosts[j].replaceAll("^\"|\"$", "");
                             filteredLink = redirectLinks[j].replaceAll("^\"|\"$", "");
 
                             event.newPostEvent(filteredPost, filteredLink, thumbnailUrls[j], domainArray[j], miniUrl[j], authorArray[j]);
+                            alreadyPosted = true; //otherwise posts twice if title has the keyword multiple times!
                             TimeUnit.SECONDS.sleep(2); //Gives JDA 2 seconds to catch up. Not doing so results in error.
+                            break;
 
                         }
                     }
