@@ -12,7 +12,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -21,11 +20,15 @@ import static Events.Token_Grabber.token;
 
 public class Scrape {
 
-    public static OkHttpClient client = new OkHttpClient();
-
     public static boolean hasStartupPosts = false;
 
-    public static void run() throws IOException, InterruptedException {
+    public static void run() throws InterruptedException {
+
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(5, TimeUnit.MINUTES)
+                .writeTimeout(5, TimeUnit.MINUTES)
+                .readTimeout(5, TimeUnit.MINUTES)
+                .build();
 
         int apiLimit = 25; //25 because that's the default Reddit API grab limit!, change this value if you change the limit.
 
@@ -45,24 +48,29 @@ public class Scrape {
 
         fillArray(alreadyPostedArray,apiLimit); //fills the array with non-null values. There is probably a better way. Perhaps using size and size++
 
-        Request request = new Request.Builder()
-                .header("User-Agent", "ScraperBot/1.0")
-                .header("Authorization", "bearer " + token)
-                .url("https://oauth.reddit.com/r/buildapcsales/new")
-                .build();
-
         do {
 
             timePause();
 
+            Request request = new Request.Builder()
+                    .header("User-Agent", "ScraperBot/1.0")
+                    .header("Authorization", "bearer " + token)
+                    .url("https://oauth.reddit.com/r/buildapcsales/new")
+                    .build();
+
             Call call = client.newCall(request); //Sets up call request
-            Response response = call.execute(); //Actually Requests
-            rawData = response.body().string(); //Places Request Body into a String and places it into rawData
+            try {
+                Response response = call.execute(); //Actually Requests
+                rawData = response.body().string(); //Places Request Body into a String and places it into rawData
 
-            jsonParse(rawData, apiLimit, redditData, redditPosts, hasStartupPosts, alreadyPostedArray, redirectLinks, thumbnailUrls, domainArray, miniUrl, authorArray);
-            hasStartupPosts = true;
+                jsonParse(rawData, apiLimit, redditData, redditPosts, hasStartupPosts, alreadyPostedArray, redirectLinks, thumbnailUrls, domainArray, miniUrl, authorArray);
+                hasStartupPosts = true;
 
-            keywordCheck(apiLimit, tempString, redditPosts, containsKeyword, alreadyPostedArray, redirectLinks, event, thumbnailUrls, domainArray, miniUrl, authorArray);
+                keywordCheck(apiLimit, tempString, redditPosts, containsKeyword, alreadyPostedArray, redirectLinks, event, thumbnailUrls, domainArray, miniUrl, authorArray);
+
+            }catch (Exception e){
+                System.out.println("CONNECTION ERROR ");
+            }
 
             repeat = true;
 
@@ -85,7 +93,7 @@ public class Scrape {
 
     }
 
-    public static void jsonParse(String rawData, int apiLimit, String[] redditData, String[] redditPosts, boolean hasStartupPosts, String[] alreadyPostedArray, String[] redirectLinks, String[] thumbnailUrls, String[] domainArray, String[] miniUrl, String[] authorArray) throws JsonProcessingException {
+    public static void jsonParse(String rawData, int apiLimit, String[] redditData, String[] redditPosts, boolean hasStartupPosts, String[] alreadyPostedArray, String[] redirectLinks, String[] thumbnailUrls, String[] domainArray, String[] miniUrl, String[] authorArray) {
 
         try {
             JsonNode node = parse(rawData); //parses rawData JSON
@@ -100,7 +108,7 @@ public class Scrape {
             hasStartupPosts(hasStartupPosts, alreadyPostedArray, redditPosts, apiLimit);
 
         }catch (Exception e){
-            System.out.println("Jackson Error");
+            System.out.println("Jackson Error - Likely Came Back with HTTP instead of JSON :(");
         }
 
     }
