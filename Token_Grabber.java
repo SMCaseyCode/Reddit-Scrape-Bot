@@ -10,15 +10,23 @@ public class Token_Grabber {
 
     public static String token = "";
 
-    public static Reddit4J getClient() throws AuthenticationException, IOException, InterruptedException { //Gets you that juicy Oauth Token.
+    public static Reddit4J getClient() { //Gets you that juicy Oauth Token.
 
         Reddit4J client = Reddit4J.rateLimited().setUsername("Username").setPassword("Password")
-                .setClientId("Client ID").setClientSecret("Client Secret")
-                .setUserAgent(new UserAgentBuilder().appname("AppName").author("u/name").version("1.0"));
+                .setClientId("Client").setClientSecret("Secret")
+                .setUserAgent(new UserAgentBuilder().appname("AppName").author("r/user").version("1.0"));
 
-        client.connect();
+        try {
+            client.connect();
+        } catch (IOException | AuthenticationException | InterruptedException e) {
+            System.out.println("Connection Error in Token_Grabber");
+        }
 
         token = client.getToken();
+
+        System.out.println("Grabbed Token: " + client.getToken());
+        System.out.println("Token Time Left: " + client.getTokenExpirationDate());
+
 
         return client;
     }
