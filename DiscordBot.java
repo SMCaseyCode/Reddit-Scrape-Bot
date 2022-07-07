@@ -10,6 +10,9 @@ import net.dv8tion.jda.api.entities.Activity;
 
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import static Events.Events.getBot;
 import static Events.Scrape.run;
@@ -19,16 +22,20 @@ public class DiscordBot {
 
     public static void main(String[] args) throws LoginException, AuthenticationException, IOException, InterruptedException {  //Bot build + registers
 
-        JDA bot = JDABuilder.createDefault("Discord Bot Token")
+        JDA bot = JDABuilder.createDefault("Bot Token")
                 .setStatus(OnlineStatus.DO_NOT_DISTURB)
                 .setActivity(Activity.playing("Scraping r/buildapcsales!"))
                 .build();
+
+        ScheduledExecutorService execService = Executors.newSingleThreadScheduledExecutor();
 
         registerEventListener(bot);
         registerCommandListener(bot);
 
         getBot(bot);
-        getClient();
+
+        execService.scheduleAtFixedRate(() -> getClient(), 0, 23, TimeUnit.HOURS); //Refreshes Token
+
         run(); //Runs Scraper
 
 
