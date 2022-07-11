@@ -12,6 +12,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -22,12 +23,12 @@ public class Scrape {
 
     public static boolean hasStartupPosts = false;
 
-    public static void run() throws InterruptedException {
+    public static void run() throws InterruptedException, IOException {
 
         OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(5, TimeUnit.MINUTES)
-                .writeTimeout(5, TimeUnit.MINUTES)
-                .readTimeout(5, TimeUnit.MINUTES)
+                .connectTimeout(59, TimeUnit.SECONDS)
+                .writeTimeout(59, TimeUnit.SECONDS)
+                .readTimeout(59, TimeUnit.SECONDS)
                 .build();
 
         int apiLimit = 25; //25 because that's the default Reddit API grab limit!, change this value if you change the limit.
@@ -59,7 +60,7 @@ public class Scrape {
                     .build();
 
             Call call = client.newCall(request); //Sets up call request
-            try {
+   
                 Response response = call.execute(); //Actually Requests
                 rawData = response.body().string(); //Places Request Body into a String and places it into rawData
 
@@ -67,10 +68,6 @@ public class Scrape {
                 hasStartupPosts = true;
 
                 keywordCheck(apiLimit, tempString, redditPosts, containsKeyword, alreadyPostedArray, redirectLinks, event, thumbnailUrls, domainArray, miniUrl, authorArray);
-
-            }catch (Exception e){
-                System.out.println("CONNECTION ERROR ");
-            }
 
             repeat = true;
 
