@@ -180,7 +180,7 @@ public class Scrape {
 
         if(!(index == 100)){ //if a new post was found
 
-            for(int j = 0; j < index; j++){
+            for(int j = 0; j < index; j++){ //NEEDS to be optimized. This is terribly slow. Could be far better. It's on the to-do list
                 boolean alreadyPosted = false;
 
                 System.out.println("New Post: " + redditPosts[j]); //shows the new post in the console
