@@ -1,55 +1,42 @@
-package me.SMCaseyCode;
+package Bot;
 
-import Events.Commands;
-import Events.Events;
-import masecla.reddit4j.exceptions.AuthenticationException;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.requests.GatewayIntent;
 
-import javax.security.auth.login.LoginException;
-import java.io.IOException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import static Events.Events.getBot;
-import static Events.Scrape.run;
-import static Events.Token_Grabber.getClient;
+import static Bot.EventManager.getBot;
+import static Bot.Reddit_Scraper.redditScrape;
+import static Data.DatabaseManager.fillData;
+import static Data.ProtectedData.TOKEN;
 
 public class DiscordBot {
+    public static void main(String[] args) {
 
-    public static void main(String[] args) throws LoginException, AuthenticationException, IOException, InterruptedException {  //Bot build + registers
-
-        JDA bot = JDABuilder.createDefault("Bot Token")
-                .setStatus(OnlineStatus.DO_NOT_DISTURB)
+        //Java Discord API call, Discord periodically updates what is required here.
+        JDA bot = JDABuilder.createLight(TOKEN.getContent(), GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGES, GatewayIntent.GUILD_MEMBERS)
+                .setStatus(OnlineStatus.ONLINE)
                 .setActivity(Activity.playing("Scraping r/buildapcsales!"))
                 .build();
 
-        ScheduledExecutorService execService = Executors.newSingleThreadScheduledExecutor();
-
+        //EventManager.java
         registerEventListener(bot);
+        //CommandManager.java
         registerCommandListener(bot);
-
+        //Gets bot
         getBot(bot);
-
-        execService.scheduleAtFixedRate(() -> getClient(), 0, 23, TimeUnit.HOURS); //Refreshes Token
-
-        run(); //Runs Scraper
-
-
-    }
-    public static void registerEventListener(JDA api){
-
-        api.addEventListener(new Events());
-
+        //Method in DatabaseManager.java
+        fillData();
+        //Starts the reddit scraper
+        redditScrape();
     }
 
-    public static void registerCommandListener(JDA api){
-
-        api.addEventListener(new Commands());
-
+    private static void registerCommandListener(JDA api) {
+        api.addEventListener(new EventManager());
     }
 
+    private static void registerEventListener(JDA api) {
+        api.addEventListener(new CommandManager());
+    }
 }
