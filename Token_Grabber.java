@@ -10,8 +10,6 @@ import static Data.ProtectedData.*;
 
 public class Token_Grabber {
 
-    public static String token;
-
     //Grabs client info
     public static Reddit4J getClient() {
 

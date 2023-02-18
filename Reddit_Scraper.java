@@ -50,7 +50,6 @@ public class Reddit_Scraper {
                     //Checks for new posts.
 
                     if (!currentTitles.contains(post.getTitle())) {
-                        System.out.println(currentTitles.contains(post.getTitle()));
                         toPost.add(post);
                         //Removes front of currentTitle, and places newPost to the back.
                         currentTitles.add(post.getTitle());

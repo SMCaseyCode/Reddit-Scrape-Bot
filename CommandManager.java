@@ -39,6 +39,7 @@ public class CommandManager extends ListenerAdapter { //TODO: Change from Guild 
         //addkeyword Command
         if (command.equals("addkeyword")) {
             OptionMapping messageOption = event.getOption("keyword");
+            boolean exists = db.dupeCheck(serverID);
             keyword = messageOption.getAsString().toUpperCase();
             if (keywordMap.containsKey(serverID)){
                 if (keywordList.contains(keyword.toUpperCase(Locale.ROOT))){
@@ -46,12 +47,16 @@ public class CommandManager extends ListenerAdapter { //TODO: Change from Guild 
                     return;
                 }
             }
-            keywordList.add(keyword);
-            keywordMap.put(serverID, keywordList);
 
-            db.insertKeyword(serverID,keyword);
+            if (exists){
+                keywordList.add(keyword);
+                keywordMap.put(serverID, keywordList);
 
-            event.reply(keyword + " was added to the active keywords.").queue();
+                db.insertKeyword(serverID,keyword);
+                event.reply(keyword + " was added to the active keywords.").queue();
+            }else {
+                event.reply("Please use /setchannel before adding keywords").queue();
+            }
 
         }
 
@@ -105,6 +110,7 @@ public class CommandManager extends ListenerAdapter { //TODO: Change from Guild 
             boolean exists = db.dupeCheck(serverID);
             if (exists){
                 db.delChannel(serverID);
+                db.wipeKeywords(serverID);
                 event.reply("The channel '" + event.getChannel().getName() + "' was removed.").queue();
             }else {
                 event.reply("This server doesn't have a set channel! Please use /setchannel first.").queue();
