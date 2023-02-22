@@ -14,6 +14,5 @@ Commands:
 - /addkeyword - adds specified keyword to list
 - /delkeyword - deletes specified keyword from list
 - /setchannel - sets channel for bot to post in
-- /delchannel - removes channel for bot to post in
 - /viewlist - shows active keyword list
 - /wipelist - wipes all keywords from active list
