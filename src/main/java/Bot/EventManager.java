@@ -19,7 +19,7 @@ public class EventManager extends ListenerAdapter {
             }else {
                 embed.setTitle(post, url);
             }
-            if (thumbnail != null && !thumbnail.equals("self")){
+            if (!thumbnail.equals("default")){
                 embed.setImage(thumbnail);
             }
             if (author != null){
@@ -30,7 +30,12 @@ public class EventManager extends ListenerAdapter {
                 embed.addField("Original Post:", "https://redd.it/" + miniUrl, true);
             }
 
-            Objects.requireNonNull(bot.getTextChannelById(channelID)).sendMessageEmbeds(embed.build()).queue();
+            try {
+                bot.getTextChannelById(channelID).sendMessageEmbeds(embed.build()).queue();
+            }catch (Exception e){
+                System.out.println("EVENT ERROR: " + e);
+            }
+
 
     }
 
